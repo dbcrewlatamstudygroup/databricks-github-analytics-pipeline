@@ -52,37 +52,37 @@ Una vez dentro de tu workspace, familiarízate con la interfaz principal.
 
 -----
 
-## **Paso 1.3: Creando tu Primer Clúster**
+## **Paso 1.3: Verificando tu Entorno Computacional**
 
-El clúster es el motor computacional que procesará tus datos. Sin él, los notebooks no pueden ejecutar código.
+Databricks Community Edition viene con un **Serverless Starter Warehouse** preconfigurado que actuará como nuestro motor computacional para procesar datos.
 
-### **Configuración del Clúster:**
+### **Verificación del Serverless Warehouse:**
 
-1. **Navega a la sección “Compute”:**
-- Haz clic en el ícono **“Compute”** en el menú lateral
-1. **Crear un nuevo clúster:**
-- Haz clic en **“Create Compute”**
-1. **Configuración recomendada:**
-- **Cluster Name:** `cluster-proyecto-github`
-- **Databricks Runtime Version:** Selecciona la versión **LTS** más reciente (no Beta)
-- **Worker Type:** Mantener configuración por defecto
-- **Driver Type:** Mantener configuración por defecto
-- **Autoscaling:** Mantener habilitado
-1. **Iniciar el clúster:**
-- Haz clic en **“Create Cluster”**
-- El proceso toma entre 3-5 minutos
-- **Estado listo:** Círculo verde junto al nombre
+1. **Navega a la sección "Compute":**
+   - Haz clic en el ícono **"Compute"** en el menú lateral
+
+2. **Verificar el Serverless Warehouse:**
+   - Deberías ver un warehouse llamado **"Starter Warehouse"** o similar
+   - **Estado:** Debe aparecer como "Running" o con un círculo verde
+   - **Tipo:** Serverless (Sin necesidad de configuración manual)
+
+3. **Si el warehouse no está activo:**
+   - Haz clic en el warehouse para seleccionarlo
+   - Clic en **"Start"** si está detenido
+   - El proceso toma 1-2 minutos en iniciarse
+
+4. **Verificación completa:**
+   - **Estado activo:** Círculo verde junto al nombre
+   - **Tipo:** Serverless Starter Warehouse
+   - **Listo para usar:** Sin configuración adicional necesaria
 
 ### **Limitaciones Community Edition:**
-
-- ✅ **Permitido:** 1 clúster activo
-- ✅ **Permitido:** Hasta 2 nodos worker
+- ✅ **Permitido:** Serverless Starter Warehouse (Ya creado)
 - ❌ **Limitado:** Sin acceso a funcionalidades premium
 - ❌ **Limitado:** Sin almacenamiento persistente integrado
 
 ### **Material de Apoyo:**
-
-- **Documentación Oficial:** [Guía sobre Clusters en Databricks](https://docs.databricks.com/clusters/index.html)
+- **Documentación Oficial:** [Databricks Serverless Compute](https://docs.databricks.com/compute/serverless.html)
 
 -----
 
@@ -92,76 +92,140 @@ Dado que Databricks Community Edition no permite almacenamiento persistente inte
 
 ### **0. Validación del Acceso a Azure**
 
+#### **Información del Proyecto:**
+- **Grupo de Recursos:** `rg-proyecto-github`
+- **Storage Account:** `stgaccproyectogh`
+
 #### **Verificación de Permisos (Paso a Paso):**
 
 1. **Acceder al grupo de recursos:**
-   
-   ```
-   URL: https://portal.azure.com/#@tu-tenant.onmicrosoft.com/resource/subscriptions/tu-subscription-id/resourceGroups/rg-proyecto-github/overview
-   ```
-1. **Navegar a Access Control (IAM):**
-- Menú lateral → **“Access control (IAM)”**
-- Pestañas superiores visibles
-1. **Verificar permisos específicos:**
-- Sección **“My access”** → Botón **“View my access”**
-- Panel derecho: **“assignments - rg-proyecto-github”**
-1. **Confirmar roles asignados:**
+   - Ve a: [Azure Portal](https://portal.azure.com)
+   - En la barra de búsqueda superior, escribe: `rg-proyecto-github`
+   - Haz clic en el grupo de recursos **"rg-proyecto-github"** cuando aparezca en los resultados
+   - Esto te llevará al dashboard del grupo de recursos
 
-|Role                             |Description                                         |Scope                   |Status     |
-|---------------------------------|----------------------------------------------------|------------------------|-----------|
-|**Reader**                       |View all resources, but does not allow modifications|Subscription (inherited)|✅ Requerido|
-|**Storage Account Contributor**  |Lets you manage storage accounts and access keys    |This resource           |✅ Requerido|
-|**Storage Blob Data Contributor**|Allows for read, write and delete access to blobs   |This resource           |✅ Requerido|
+2. **Navegar a Access Control (IAM):**
+   - Menú lateral → **"Access control (IAM)"**
+   - Pestañas superiores visibles
+
+3. **Verificar permisos específicos:**
+   - Sección **"My access"** → Botón **"View my access"**
+   - Panel derecho: **"assignments - rg-proyecto-github"**
+
+4. **Confirmar roles asignados:**
+
+| Role | Description | Scope | Status |
+|------|-------------|-------|--------|
+| **Reader** | View all resources, but does not allow modifications | Subscription (inherited) | ✅ Requerido |
+| **Storage Account Contributor** | Lets you manage storage accounts and access keys | This resource | ✅ Requerido |
+| **Storage Blob Data Contributor** | Allows for read, write and delete access to blobs | This resource | ✅ Requerido |
 
 #### **Obtención de Credenciales:**
 
 1. **Localizar Storage Account:**
-- En el grupo de recursos, buscar recurso tipo **“Storage account”**
-- Hacer clic en el nombre del Storage Account
-1. **Acceder a las claves:**
-- Menú lateral → **“Security + networking”** → **“Access keys”**
-- Copiar **Storage account name**
-- Revelar y copiar **Key 1** o **Key 2**
+   - En el grupo de recursos, buscar el recurso **"stgaccproyectogh"** (tipo: Storage account)
+   - Hacer clic en el nombre del Storage Account: **stgaccproyectogh**
+
+2. **Acceder a las claves:**
+   - Menú lateral → **"Security + networking"** → **"Access keys"**
+   - Copiar **Storage account name:** `stgaccproyectogh`
+   - Revelar y copiar **Key 1** o **Key 2**
 
 ### **1. Configurar Databricks Secrets**
 
-#### **Crear Secret Scope:**
+#### **💡 Enfoque Híbrido: UI + Python SDK**
 
-1. **Navegar a secrets:**
-   
-   ```
-   URL: https://tu-workspace.cloud.databricks.com/#secrets/createScope
-   ```
-1. **Configuración:**
-- **Scope Name:** `azure-storage-secrets`
-- **Manage Principal:** Creator
-- **Backend Type:** Databricks
+**Ventajas de este método:**
+- ✅ **UI para Scope:** Visual y fácil de entender
+- ✅ **SDK para Secrets:** Programático y reproducible  
+- ✅ **Sin limitaciones:** No depende de URLs específicas
+- ✅ **Más control:** Manejo directo de errores
+- ✅ **Documentable:** Código que se puede versionar
 
-#### **Agregar Secrets:**
+Utilizaremos la **interfaz web** para crear el scope (más visual) y **Python SDK** para agregar secrets (más programático y reproducible).
 
-1. **Secret 1 - Nombre del Storage:**
-   
-   ```
-   URL: https://tu-workspace.cloud.databricks.com/#secrets/createSecret
-   ```
-- **Scope:** `azure-storage-secrets`
-- **Key:** `storage-account-name`
-- **Value:** [Nombre del Storage Account]
-1. **Secret 2 - Clave de Acceso:**
-   
-   ```
-   URL: https://tu-workspace.cloud.databricks.com/#secrets/createSecret
-   ```
-- **Scope:** `azure-storage-secrets`
-- **Key:** `storage-account-key`
-- **Value:** [Clave completa del Storage Account]
+#### **Crear Secret Scope (Desde la UI):**
+
+1. **Navegar a secrets en Databricks:**
+   - En tu workspace de Databricks, agrega `#secrets/createScope` al final de la URL
+   - URL: `https://tu-workspace.cloud.databricks.com/#secrets/createScope`
+
+2. **Configurar el Scope:**
+   - **Scope Name:** `azure-storage-secrets`
+   - **Manage Principal:** Creator (por defecto)
+   - Haz clic en **"Create"**
+
+#### **Agregar Secrets (Usando Python SDK):**
+
+Una vez creado el scope, ejecuta este código en una celda de tu notebook:
+
+```python
+# Instalar Databricks SDK si no está disponible
+%pip install databricks-sdk
+
+# Importar y configurar el cliente
+from databricks.sdk import WorkspaceClient
+
+# Inicializar cliente de Databricks
+w = WorkspaceClient()
+
+# Agregar el nombre del Storage Account
+w.secrets.put_secret(
+    scope="azure-storage-secrets",
+    key="storage-account-name", 
+    string_value="stgaccproyectogh"
+)
+
+# Agregar la clave de acceso del Storage Account
+# IMPORTANTE: Reemplaza "TU_STORAGE_ACCOUNT_KEY" con la clave real obtenida del Portal Azure
+w.secrets.put_secret(
+    scope="azure-storage-secrets",
+    key="storage-account-key",
+    string_value="TU_STORAGE_ACCOUNT_KEY"  # ← Reemplazar con la clave real
+)
+
+print("✅ Secrets configurados exitosamente:")
+print("   - storage-account-name: stgaccproyectogh")
+print("   - storage-account-key: [OCULTA]")
+```
+
+#### **Verificar Secrets Configurados:**
+
+```python
+# Verificar que los secrets se crearon correctamente
+try:
+    # Listar scopes
+    scopes = w.secrets.list_scopes()
+    target_scope = "azure-storage-secrets"
+    
+    if any(scope.name == target_scope for scope in scopes):
+        print(f"✅ Scope '{target_scope}' encontrado")
+        
+        # Listar secrets en el scope
+        secrets = w.secrets.list_secrets(scope=target_scope)
+        secret_keys = [secret.key for secret in secrets]
+        print(f"🔑 Secrets disponibles: {secret_keys}")
+        
+        # Verificar que tenemos los secrets necesarios
+        required_keys = ["storage-account-name", "storage-account-key"]
+        if all(key in secret_keys for key in required_keys):
+            print("🎉 Todos los secrets requeridos están configurados")
+        else:
+            missing = [key for key in required_keys if key not in secret_keys]
+            print(f"❌ Faltan estos secrets: {missing}")
+    else:
+        print(f"❌ Scope '{target_scope}' no encontrado")
+        
+except Exception as e:
+    print(f"❌ Error verificando secrets: {e}")
+```
 
 ### **2. Configurar Conexión en Databricks**
 
 #### **Código de Configuración (Notebook):**
 
 ```python
-# Verificar configuración de secrets
+# Verificar configuración de secrets usando dbutils (método tradicional)
 print("🔍 Verificando configuración de secrets...")
 try:
     scopes = dbutils.secrets.listScopes()
@@ -172,6 +236,14 @@ try:
         secret_keys = [secret.key for secret in secrets]
         print(f"✅ Scope encontrado: {target_scope}")
         print(f"🔑 Secrets disponibles: {secret_keys}")
+        
+        # Verificar que tenemos los secrets necesarios
+        required_keys = ["storage-account-name", "storage-account-key"]
+        if all(key in secret_keys for key in required_keys):
+            print("🎉 Todos los secrets requeridos están configurados")
+        else:
+            missing = [key for key in required_keys if key not in secret_keys]
+            print(f"❌ Faltan estos secrets: {missing}")
     else:
         print(f"❌ Scope '{target_scope}' no encontrado")
         
@@ -199,7 +271,8 @@ def get_storage_client():
         
         # Test de conexión
         containers = list(blob_service_client.list_containers())
-        print(f"✅ Conexión exitosa! Contenedores: {len(containers)}")
+        print(f"✅ Conectado a Azure Storage: {storage_account_name}")
+        print(f"📦 Contenedores encontrados: {len(containers)}")
         
         return blob_service_client
         
@@ -213,11 +286,18 @@ storage_client = get_storage_client()
 
 ### **3. Crear Estructura del Proyecto**
 
+En este paso vas a crear un contenedor con la siguiente sintaxis:
+> primeraLetraNombrePrimerApellido-proyecto-gh -->> Ejemplo alopez-proyecto-gh
+
+
+Validar que no exista otro contenedor ya creado con este nombre, si es asi utiliza la siguiente sintaxis:
+> primeraLetraNombrePrimerApellidoPrimeraLetraSegundoApellido-proyecto-gh -->> Ejemplo alopezm-proyecto-gh
+
 #### **Configurar Medallion Architecture:**
 
 ```python
 # Configuración del proyecto
-container_name = "alopez-proyecto-gh"
+container_name = "nombre-contenedor"
 folders = ["bronze", "silver", "gold"]
 
 def setup_project_structure():
@@ -311,24 +391,27 @@ verify_complete_setup()
 ### **✅ Elementos Configurados:**
 
 1. **Databricks Community Edition**
-- ✅ Cuenta creada y verificada
-- ✅ Workspace activo
-- ✅ Interfaz explorada
-1. **Clúster Computacional**
-- ✅ Clúster creado con configuración óptima
-- ✅ Runtime LTS seleccionado
-- ✅ Estado activo (círculo verde)
-1. **Azure Storage Account**
-- ✅ Permisos verificados en Portal Azure
-- ✅ Credenciales obtenidas
-- ✅ Databricks Secrets configurados
-- ✅ Conexión establecida
-1. **Estructura del Proyecto**
-- ✅ Contenedor `alopez-proyecto-gh` creado
-- ✅ Medallion Architecture implementada:
-  - 🥉 **Bronze:** Datos en bruto
-  - 🥈 **Silver:** Datos procesados
-  - 🥇 **Gold:** Datos para análisis
+   - ✅ Cuenta creada y verificada
+   - ✅ Workspace activo
+   - ✅ Interfaz explorada
+
+2. **Serverless Warehouse**
+   - ✅ Starter Warehouse verificado y activo
+   - ✅ Estado "Running" confirmado
+   - ✅ Listo para procesar datos
+
+3. **Azure Storage Account**
+   - ✅ Permisos verificados en Portal Azure
+   - ✅ Storage Account `stgaccproyectogh` configurado  
+   - ✅ Databricks Secrets configurados (UI + SDK)
+   - ✅ Conexión establecida y probada
+
+4. **Estructura del Proyecto**
+   - ✅ Contenedor `nombre-contenedor` creado
+   - ✅ Medallion Architecture implementada:
+     - 🥉 **Bronze:** Datos en bruto
+     - 🥈 **Silver:** Datos procesados
+     - 🥇 **Gold:** Datos para análisis
 
 ### **🎯 Próximo Paso:**
 
@@ -337,6 +420,6 @@ verify_complete_setup()
 ### **📚 Material de Apoyo:**
 
 - **Databricks:** [Documentación Oficial](https://docs.databricks.com/getting-started/index.html)
+- **Databricks SDK:** [Python SDK Documentation](https://databricks-sdk-py.readthedocs.io/)
 - **Azure Storage:** [Guía de Python SDK](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-python)
 - **Medallion Architecture:** [Conceptos y mejores prácticas](https://databricks.com/glossary/medallion-architecture)
-
