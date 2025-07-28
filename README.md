@@ -122,7 +122,7 @@ graph TB
 
 ### **Semana 2: Transformaciones y Capa Silver** 🔄
 
-**(Próximamente)**
+**[📖 Ir a la Guía Completa](./semana-2/README.md)**
 
 #### 🎯 Objetivos:
 
